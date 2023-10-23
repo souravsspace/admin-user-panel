@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId           String      @id @default(uuid())
+  id               Int         @default(autoincrement()) // for sorting
+  name             String
+  email            String      @unique
+  password         String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  role             USER_ROLE   @default(USER)
+  didFillMultiForm Boolean     @default(false)
+  Multiform        Multiform[]
+}
+
+model Multiform {
+  id         String   @id @default(uuid())
+  first_name String
+  last_name  String
+  age        Int
+  phone      String
+  county     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  User       User?    @relation(fields: [userUserId], references: [userId])
+  userUserId String?
+}
+
+enum USER_ROLE {
+  USER
+  ADMIN
+}
