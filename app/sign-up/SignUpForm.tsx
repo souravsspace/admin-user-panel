@@ -20,6 +20,7 @@ import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Separator } from "@/components/ui/separator"
 import { BsGithub } from "react-icons/bs"
+import { signIn } from "next-auth/react"
 
 export default function SignUpForm() {
    const router = useRouter()
@@ -38,8 +39,9 @@ export default function SignUpForm() {
 
    const onSubmit = async (data: SignupSchemaType) => {
       await mutateAsync(data)
-      if (isSuccess) router.push("/sign-in")
    }
+   
+   if (isSuccess) router.push("/sign-in")
 
    return (
       <form
@@ -112,6 +114,7 @@ export default function SignUpForm() {
                   <Separator className="w-[100px] bg-white/50" />
                </div>
                <Button
+                  onClick={() => signIn("github")}
                   type="button"
                   className="transition-all w-full border hover:border-transparent border-white/10 flex items-center justify-center gap-2 bg-transparent text-white hover:bg-white/10 text-sm"
                >
