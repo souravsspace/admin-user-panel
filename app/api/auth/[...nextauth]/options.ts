@@ -13,6 +13,7 @@ export const options: NextAuthOptions = {
    },
    providers: [
       GitHubProvider({
+         name: "github",
          clientId: process.env.GITHUB_CLIENT_ID as string,
          clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
       }),
@@ -45,7 +46,7 @@ export const options: NextAuthOptions = {
             })
             if (!user) return null
 
-            const isValid = await compare(user.password, password)
+            const isValid = await compare(password, user.password)
             if (!isValid) return null
 
             return {

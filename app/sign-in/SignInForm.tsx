@@ -13,26 +13,19 @@ import { Input } from "@/components/ui/input"
 import { loginSchema, LoginSchemaType } from "@/validation/zod.validation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation } from "@tanstack/react-query"
 import Error from "@/components/error"
 import Success from "@/components/success"
 import { useRouter } from "next/navigation"
 import { Separator } from "@/components/ui/separator"
 import { BsGithub } from "react-icons/bs"
 import { signIn } from "next-auth/react"
+import { useState } from "react"
 
 export default function SignInForm() {
    const router = useRouter()
-
-   const { isPending, isPaused, isSuccess, mutateAsync, error } = useMutation({
-      mutationFn: async (data: LoginSchemaType) => {
-         await signIn("credentials", {
-            email: data.email,
-            password: data.password,
-            redirect: false,
-         })
-      },
-   })
+   const [error, setError] = useState("")
+   const [isPending, setIsPending] = useState(false)
+   const [isSuccess, setIsSuccess] = useState(false)
 
    const {
       register,
@@ -41,8 +34,23 @@ export default function SignInForm() {
    } = useForm<LoginSchemaType>({ resolver: zodResolver(loginSchema) })
 
    const onSubmit = async (data: LoginSchemaType) => {
-      await mutateAsync(data)
-      if (isSuccess) router.push("/")
+      try {
+         setIsPending(true)
+         await signIn("credentials", {
+            email: data.email,
+            password: data.password,
+            redirect: false,
+         })
+         setIsSuccess(true)
+         router.push("/")
+      } catch (error) {
+         setIsSuccess(false)
+         setIsPending(false)
+         setError("something went wrong!")
+      }
+      setIsSuccess(false)
+      setIsPending(false)
+      setError("")
    }
 
    return (
@@ -58,12 +66,12 @@ export default function SignInForm() {
                </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
-               {zodError.email || zodError.password || error ? (
+               {zodError.email || zodError.password || error !== "" ? (
                   <Error
                      title={
                         zodError.email?.message ||
                         zodError.password?.message ||
-                        error?.message ||
+                        error ||
                         "Validation error"
                      }
                      description={"Some thing went worng"}
@@ -92,7 +100,7 @@ export default function SignInForm() {
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
                <Button
-                  disabled={isPending || isPaused}
+                  disabled={isPending}
                   className="w-full"
                   type="submit"
                   variant="secondary"
@@ -107,6 +115,7 @@ export default function SignInForm() {
                   <Separator className="w-[100px] bg-white/50" />
                </div>
                <Button
+                  disabled={true}
                   onClick={() => signIn("github")}
                   type="button"
                   className="transition-all w-full border hover:border-transparent border-white/10 flex items-center justify-center gap-2 bg-transparent text-white hover:bg-white/10 text-sm"
